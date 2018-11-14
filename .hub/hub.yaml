@@ -1,0 +1,104 @@
+version: 1
+kind: application
+meta:
+  name: 'nodejs-backend:1'
+  brief: NodeJS microservice with Express web framework
+  source:
+    dir: .
+requires:
+  - kubernetes
+  - jenkins
+components:
+  - name: jenkins-iam-role
+    source:
+      dir: components/jenkins-iam-role
+  - name: github-repository
+    source:
+      dir: components/github-repository
+  - name: ecr
+    source:
+      dir: components/ecr
+parameters:
+  - name: application.description
+    value: NodeJS microservice with Express
+  - name: application.ingress
+    value: happynode.app.dev05.demo10.superhub.io
+  - name: application.ingress.host
+    value: '${application.name}.${component.ingress.fqdn}'
+  - name: application.name
+    value: happynode
+  - name: application.namespace
+    value: applications
+  - name: application.path
+    value: /
+  - name: application.replicas
+    value: '1'
+  - name: application.state.file
+    fromEnv: APP_STATE_FILE
+  - name: application.version
+    value: latest
+  - name: cloud.region
+  - name: cloud.role.worker
+  - name: component.dex.okta.appId
+    value: 0oa2iuw92gpCiNM2L2p7
+  - name: component.dex.okta.clientId
+    value: 0oa2iuw92gpCiNM2L2p7
+  - name: component.dex.okta.clientSecret
+    value: oFJ5ubazrhh28WY4iGcr7a5TrNdOe4arzQn2gwJV
+  - name: component.dex.okta.issuer
+    value: 'https://agilestacks.okta.com'
+  - name: component.docker.image
+  - name: component.ecr.name
+    value: '${dns.domain}/${application.name}'
+  - name: component.git.remote
+  - name: component.github.repository.description
+    value: |
+      NodeJS microservice with Express web framework
+  - name: component.github.repository.name
+    value: happynode
+  - name: component.github.repository.organization
+    value: mameshini
+  - name: component.github.token
+    fromEnv: COMPONENT_GITHUB_TOKEN
+  - name: component.github.webhook.events.json
+    value: '["push"]'
+  - name: component.github.webhook.name
+    value: github
+  - name: component.ingress.fqdn
+  - name: component.ingress.protocol
+  - name: component.jenkins-iam-role.name
+    value: '${dns.domain}/${application.name}'
+  - name: component.jenkins-iam-role.roleArn
+  - name: component.jenkins.url
+  - name: dns.domain
+    env: DOMAIN_NAME
+  - name: terraform.bucket.name
+  - name: terraform.bucket.region
+outputs:
+  - name: application.git.remote
+    value: '${component.git.remote}'
+  - name: application.docker.image
+    value: '${component.docker.image}'
+  - name: application.name
+    value: '${application.name}'
+  - name: application.namespace
+    value: '${application.namespace}'
+  - name: application.fqdn
+    value: '${application.ingress.host}'
+  - name: application.path
+    value: '${application.path}'
+  - name: application.url
+    value: >-
+      ${component.ingress.protocol}://${application.ingress.host}${application.path}
+  - name: application.jenkins.pipeline.url
+    value: '${component.jenkins.url}/job/${application.name}-pipeline'
+  - name: application.cloud.role
+    value: '${component.jenkins-iam-role.roleArn}'
+templates:
+  files:
+    - templates/*.template
+lifecycle:
+  order:
+    - ecr
+    - github-repository
+    - jenkins-iam-role
